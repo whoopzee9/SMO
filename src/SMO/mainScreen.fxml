@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<TabPane fx:id="TPMainPane" prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="SMO.MainScreenController">
+   <tabs>
+      <Tab fx:id="TMenu" closable="false" text="Menu">
+         <content>
+            <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="471.0" prefWidth="702.0">
+               <children>
+                  <ScrollPane fx:id="SPSources" layoutX="35.0" layoutY="176.0" prefHeight="170.0" prefWidth="114.0">
+                     <content>
+                        <VBox fx:id="VBSources" prefHeight="200.0" prefWidth="100.0" />
+                     </content>
+                  </ScrollPane>
+                  <ScrollPane fx:id="SPDevices" layoutX="213.0" layoutY="176.0" prefHeight="170.0" prefWidth="114.0">
+                     <content>
+                        <VBox fx:id="VBDevices" prefHeight="200.0" prefWidth="100.0" />
+                     </content>
+                  </ScrollPane>
+                  <Label fx:id="LSources" layoutX="59.0" layoutY="101.0" text="Sources">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+                  <Button fx:id="BSourcesAdd" layoutX="35.0" layoutY="137.0" mnemonicParsing="false" onAction="#addSourceClicked" text="+" />
+                  <Button fx:id="BSourcesDel" layoutX="128.0" layoutY="137.0" mnemonicParsing="false" onAction="#delSourceClicked" text="-" />
+                  <Button fx:id="BStart" layoutX="485.0" layoutY="369.0" mnemonicParsing="false" onAction="#startClicked" prefHeight="61.0" prefWidth="178.0" text="START">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Button>
+                  <Button fx:id="BDevicesAdd" layoutX="213.0" layoutY="137.0" mnemonicParsing="false" onAction="#addDeviceClicked" text="+" />
+                  <Button fx:id="BDevicesDel" layoutX="306.0" layoutY="137.0" mnemonicParsing="false" onAction="#delDeviceClicked" text="-" />
+                  <Label fx:id="LDevices" layoutX="238.0" layoutY="101.0" text="Devices">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+                  <Label fx:id="LBuffer" layoutX="419.0" layoutY="174.0" text="Buffer size">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+                  <TextField fx:id="TFBuffer" layoutX="524.0" layoutY="175.0" prefHeight="25.0" prefWidth="100.0">
+                     <font>
+                        <Font size="14.0" />
+                     </font></TextField>
+                  <TextField fx:id="TFTotalRequests" layoutX="524.0" layoutY="236.0" prefHeight="25.0" prefWidth="100.0">
+                     <font>
+                        <Font size="14.0" />
+                     </font></TextField>
+                  <Label fx:id="LTotalRequests" layoutX="401.0" layoutY="220.0" prefHeight="58.0" prefWidth="123.0" text="Total request &#10;amount" textAlignment="CENTER">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+                  <CheckBox fx:id="CBStepByStep" layoutX="306.0" layoutY="386.0" mnemonicParsing="false" text="Step-By-Step">
+                     <font>
+                        <Font size="19.0" />
+                     </font></CheckBox>
+                  <Label layoutX="289.0" layoutY="6.0" text="SMO">
+                     <font>
+                        <Font size="57.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+         </content>
+      </Tab>
+
+       <Tab fx:id="TStepByStep" closable="false" text="Step-by-step">
+           <content>
+               <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="470.0" prefWidth="700.0">
+               <children>
+                  <TableView fx:id="TVCalendar" layoutX="26.0" layoutY="70.0" prefHeight="330.0" prefWidth="285.0">
+                    <columns>
+                      <TableColumn fx:id="TCEventType" prefWidth="71.60000228881836" text="Type" />
+                      <TableColumn fx:id="TCEventTime" prefWidth="109.20001220703125" text="Time" />
+                        <TableColumn fx:id="TCEventRequest" prefWidth="68.59999084472656" text="Request" />
+                        <TableColumn fx:id="TCSign" prefWidth="34.0" text="Sign" />
+                    </columns>
+                  </TableView>
+                  <Label layoutX="106.0" layoutY="32.0" text="Event Calendar">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+                  <TableView fx:id="TVBuffer" layoutX="433.0" layoutY="80.0" prefHeight="236.0" prefWidth="227.0">
+                    <columns>
+                      <TableColumn fx:id="TCBufferNumber" prefWidth="75.0" text="Num" />
+                      <TableColumn fx:id="TCBufferRequest" prefWidth="56.199951171875" text="Request" />
+                        <TableColumn fx:id="TCRequestTime" prefWidth="94.20001220703125" text="Request time" />
+                    </columns>
+                  </TableView>
+                  <Label layoutX="521.0" layoutY="32.0" text="Buffer">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+                  <Button fx:id="BNext" layoutX="474.0" layoutY="364.0" mnemonicParsing="false" onAction="#nextButtonClicked" prefHeight="73.0" prefWidth="144.0" text="NEXT">
+                     <font>
+                        <Font name="System Bold" size="19.0" />
+                     </font></Button>
+                  <Button fx:id="BSkip" layoutX="360.0" layoutY="392.0" mnemonicParsing="false" onAction="#skipClicked" prefHeight="45.0" prefWidth="73.0" text="SKIP">
+                     <font>
+                        <Font name="System Bold" size="19.0" />
+                     </font>
+                  </Button>
+               </children>
+               </Pane>
+           </content>
+       </Tab>
+
+       <Tab fx:id="TResults" closable="false" text="Results">
+           <content>
+               <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="472.0" prefWidth="700.0">
+               <children>
+                  <TableView fx:id="TVSourceResults" layoutX="103.0" layoutY="30.0" prefHeight="200.0" prefWidth="570.0">
+                    <columns>
+                      <TableColumn fx:id="TCSourceNum" prefWidth="44.200011253356934" text="Num" />
+                      <TableColumn fx:id="TCTotalAmount" prefWidth="86.39999771118164" text="Total Amount" />
+                        <TableColumn fx:id="TCDeniedProb" prefWidth="75.79998779296875" text="Denied prob" />
+                        <TableColumn fx:id="TCTPreb" prefWidth="71.79997253417969" text="T preb" />
+                        <TableColumn fx:id="TCTWaiting" prefWidth="60.79998779296875" text="T waiting" />
+                        <TableColumn fx:id="TCTService" prefWidth="68.0" text="T service" />
+                        <TableColumn fx:id="TCWaitingDisp" prefWidth="79.4000244140625" text="Waiting disp" />
+                        <TableColumn fx:id="TCServiceDisp" prefWidth="82.199951171875" text="Service disp" />
+                    </columns>
+                  </TableView>
+                  <Label layoutX="14.0" layoutY="109.0" text="Sources">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+                  <TableView fx:id="TVDeviceResults" layoutX="262.0" layoutY="250.0" prefHeight="200.0" prefWidth="176.0">
+                    <columns>
+                      <TableColumn fx:id="TCDeviceNum" prefWidth="75.0" text="Num" />
+                      <TableColumn fx:id="TCUtilizationRate" prefWidth="97.20001220703125" text="Utilization rate" />
+                    </columns>
+                  </TableView>
+                  <Label layoutX="15.0" layoutY="350.0" text="Devices">
+                     <font>
+                        <Font size="19.0" />
+                     </font></Label>
+               </children>
+               </Pane>
+           </content>
+       </Tab>
+   </tabs>
+</TabPane>
