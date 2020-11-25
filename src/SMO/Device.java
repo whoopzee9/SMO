@@ -4,16 +4,18 @@ public class Device {
     private int number;
     private double tServiceStart;
     private double tOsv;
-    private double tau;
+    private double alpha;
+    private double beta;
     private double tWork;
     private double tTotal;
     private double utilizationRate;
     private int sign; //Признак
     private Request currRequest;
 
-    public Device(int num, double tau) {
+    public Device(int num, double a, double b) {
         number = num;
-        this.tau = tau;
+        alpha = a;
+        beta = b;
         tServiceStart = 0;
         tOsv = 0;
         tWork = 0;
@@ -23,6 +25,7 @@ public class Device {
 
     public void service(Request request) {
         tServiceStart = request.getServiceStartTime();
+        double tau = Math.random() * (beta - alpha) + alpha;
         tOsv = tServiceStart + tau;
         currRequest = request;
         request.setProc();
@@ -56,7 +59,7 @@ public class Device {
     }
 
     public double getUtilizationRate() {
-        return tWork / tTotal;
+        return tWork / tTotal * 100;
     }
 
     public int getNumber() {

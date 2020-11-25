@@ -7,10 +7,8 @@ import java.util.Scanner;
 
 public class Calculations extends Thread {
 
-    private ArrayList<Double> sourcesLam;
-    private ArrayList<Double> devicesTau;
     private int bufferSize;
-    private int requestAmount;
+    private long requestAmount;
     private boolean stepsFlag;
     private final Object monitor;
 
@@ -23,15 +21,14 @@ public class Calculations extends Thread {
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
 
-    public Calculations(ArrayList<Double> sourcesLam, ArrayList<Double> devicesLam, int bufferSize, int requestAmount, Object monitor, boolean stepFlag) {
-        this.sourcesLam = sourcesLam;
-        this.devicesTau = devicesLam;
+    public Calculations(ArrayList<Source> sources, ArrayList<Device> devices, int bufferSize, int requestAmount, Object monitor, boolean stepFlag) {
+
         this.bufferSize = bufferSize;
         this.buffer = new Buffer(bufferSize);
         this.requestAmount = requestAmount;
         this.stepsFlag = stepFlag;
-        sources = new ArrayList<>();
-        devices = new ArrayList<>();
+        this.sources = sources;
+        this.devices = devices;
         startSources = new ArrayList<>();
         startDevices = new ArrayList<>();
         this.monitor = monitor;
@@ -39,16 +36,6 @@ public class Calculations extends Thread {
 
     @Override
     public void run() {
-
-        for (int i = 0; i < sourcesLam.size(); i++) {
-            Source s = new Source(i, sourcesLam.get(i));
-            sources.add(s);
-        }
-
-        for (int i = 0; i < devicesTau.size(); i++) {
-            Device d = new Device(i, devicesTau.get(i));
-            devices.add(d);
-        }
 
         /*Source s = new Source(0, 2);
         sources.add(s);
@@ -78,61 +65,64 @@ public class Calculations extends Thread {
             value.generateNewRequest();
         }
 
-        while (currSum < requestAmount) {
-            //Определение наименьшего времени
-            Source minSource = getMinSourceTime();
-            Device minDevice = getMinDeviceTime();
-            System.out.println("---------------------------------------------------------------------");
+        boolean flag = false;
+        double prevProb = 0;
+        while (!flag) {
+            while (currSum < requestAmount) {
+                //Определение наименьшего времени
+                Source minSource = getMinSourceTime();
+                Device minDevice = getMinDeviceTime();
+                //System.out.println("---------------------------------------------------------------------");
 
-            if (stepsFlag) {
-                startSources = sources;
-                startDevices = devices;
-                startBuffer = buffer;
-                support.firePropertyChange("stepFlag", true, false);
-            }
+                if (stepsFlag) {
+                    startSources = sources;
+                    startDevices = devices;
+                    startBuffer = buffer;
+                    support.firePropertyChange("stepFlag", true, false);
+                }
 
-            if (stepsFlag) {
-                System.out.println("Before step started ");
+                if (stepsFlag) {
+                /*System.out.println("Before step started ");
                 System.out.println(minSource.getCurrRequest().gettPost());
                 System.out.println(minDevice.gettOsv());
-                System.out.println(minDevice.getSign());
-                synchronized (monitor) {
-                    try {
-                        monitor.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                System.out.println(minDevice.getSign());*/
+                    synchronized (monitor) {
+                        try {
+                            monitor.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+
+                if (minSource.getCurrRequest().gettPost() < minDevice.gettOsv() || minDevice.getSign() == 1) {
+                    //System.out.println("request");
+                    Request r = minSource.getCurrRequest();
+                    minSource.generateNewRequest();
+                    Device dev = getFreeDevice();
+                    if (dev != null) {
+                        dev.service(r);
+                        minSource.handleRequestResults(r);
+                    } else {
+                        minSource.handleRequestResults(buffer.addRequestToBuffer(r));
+                    }
+                } else {
+                    //System.out.println("device");
+                    if (buffer.isEmpty()) {
+                        //System.out.println("sign set!");
+                        minDevice.setSign(1);
+                    } else {
+                        Request r = buffer.getRequestFromBuffer(minDevice.gettOsv());
+                        minDevice.service(r);
+                        sources.get(r.getSourceNum()).handleRequestResults(r);
                     }
                 }
 
-            }
-
-            if (minSource.getCurrRequest().gettPost() < minDevice.gettOsv() || minDevice.getSign() == 1) {
-                System.out.println("request");
-                Request r = minSource.getCurrRequest();
-                minSource.generateNewRequest();
-                Device dev = getFreeDevice();
-                if (dev != null) {
-                    dev.service(r);
-                    minSource.handleRequestResults(r);
-                } else {
-                    minSource.handleRequestResults(buffer.addRequestToBuffer(r));
+                currSum = 0;
+                for (Source source : sources) {
+                    currSum += source.getProcAmount();
                 }
-            } else {
-                System.out.println("device");
-                if (buffer.isEmpty()) {
-                    System.out.println("sign set!");
-                    minDevice.setSign(1);
-                } else {
-                    Request r = buffer.getRequestFromBuffer(minDevice.gettOsv());
-                    minDevice.service(r);
-                    sources.get(r.getSourceNum()).handleRequestResults(r);
-                }
-            }
-
-            currSum = 0;
-            for (Source source : sources) {
-                currSum += source.getProcAmount();
-            }
 
             /*if (stepsFlag) {
                 System.out.println("Press Enter to continue... Type 's' to skip ");
@@ -145,9 +135,28 @@ public class Calculations extends Thread {
                 }
 
             }*/
+            }
+
+            double currAvgProb = getAvgProbability() / 100;
+
+            System.out.println("amount: " + requestAmount);
+            System.out.println("currAvgProb: " + currAvgProb * 100);
+            long newAmount = Math.round((1.643 * 1.643 * (1 - currAvgProb)) / (currAvgProb * 0.1 * 0.1));
+            System.out.println("new amount: " + newAmount);
+            if (prevProb != 0) {
+                if (Math.abs(prevProb - currAvgProb) < 0.1 * prevProb) {
+                    flag = true;
+                } else {
+                    requestAmount = newAmount;
+                }
+            } else {
+                requestAmount = newAmount;
+            }
+            prevProb = currAvgProb;
+
         }
 
-        support.firePropertyChange("resultFlag", true, false);
+        support.firePropertyChange("requestAmount", 0, requestAmount);
 
     }
 
@@ -228,5 +237,13 @@ public class Calculations extends Thread {
         }
 
         return dMin;
+    }
+
+    private double getAvgProbability() {
+        double sum = 0;
+        for (Source source: sources) {
+            sum += source.getDeniedProb();
+        }
+        return sum / sources.size();
     }
 }

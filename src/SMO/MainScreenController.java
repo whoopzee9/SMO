@@ -1,5 +1,6 @@
 package SMO;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -7,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 
@@ -73,6 +75,8 @@ public class MainScreenController implements PropertyChangeListener {
     private TableColumn<Device, Integer> TCDeviceNum;
     @FXML
     private TableColumn<Device, Double> TCUtilizationRate;
+    @FXML
+    private Label LRequestAmount;
 
     private ObservableList<EventCalendar> eventList;
     private Calculations calc;
@@ -176,9 +180,14 @@ public class MainScreenController implements PropertyChangeListener {
 
     @FXML
     public void addDeviceClicked() {
-        TextField temp = new TextField();
-        temp.setPromptText("enter tau");
-        VBDevices.getChildren().add(temp);
+        TextField alpha = new TextField();
+        TextField beta = new TextField();
+        HBox hbox = new HBox();
+        alpha.setPromptText("enter a");
+        beta.setPromptText("enter b");
+        hbox.getChildren().add(alpha);
+        hbox.getChildren().add(beta);
+        VBDevices.getChildren().add(hbox);
     }
 
     @FXML
@@ -197,10 +206,10 @@ public class MainScreenController implements PropertyChangeListener {
 
     @FXML
     public void startClicked() {
-        ArrayList<Double> sources = getVBoxInput(VBSources);
+        ArrayList<Source> sources = getSourcesVBoxInput(VBSources);
         System.out.println(sources);
 
-        ArrayList<Double> devices = getVBoxInput(VBDevices);
+        ArrayList<Device> devices = getDevicesVBoxInput(VBDevices);
         System.out.println(devices);
 
         if (sources == null || devices == null) {
@@ -272,20 +281,16 @@ public class MainScreenController implements PropertyChangeListener {
         return minEvent;
     }
 
-    private ArrayList<Double> getVBoxInput(VBox vbox) {
+    private ArrayList<Source> getSourcesVBoxInput(VBox vbox) {
         ObservableList<Node> nodes = vbox.getChildren();
-        ArrayList<Double> list = new ArrayList<>();
-        for (Node node: nodes) {
-            TextField textField = new TextField();
+        ArrayList<Source> list = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            TextField textField;
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Warning");
             alert.setHeaderText("Wrong input");
-            if (node.getClass() != textField.getClass()) {
-                alert.setContentText("Wrong nodes in VBox!");
-                alert.showAndWait();
-                return null;
-            }
-            textField = (TextField) node;
+
+            textField = (TextField) nodes.get(i);
             String text = textField.getText();
             if (text.isEmpty()) {
                 alert.setContentText("Enter values!");
@@ -301,7 +306,48 @@ public class MainScreenController implements PropertyChangeListener {
                 return null;
             }
 
-            list.add(lam);
+            list.add(new Source(i, lam));
+        }
+        return list;
+    }
+
+    private ArrayList<Device> getDevicesVBoxInput(VBox vbox) {
+        ObservableList<Node> nodes = vbox.getChildren();
+        ArrayList<Device> list = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            HBox hbox = (HBox) nodes.get(i);
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning");
+            alert.setHeaderText("Wrong input");
+
+            TextField textFieldAlpha = (TextField) hbox.getChildren().get(0);
+            TextField textFieldBeta = (TextField) hbox.getChildren().get(1);
+
+            String textAlpha = textFieldAlpha.getText();
+            String textBeta = textFieldBeta.getText();
+            if (textAlpha.isEmpty() || textBeta.isEmpty()) {
+                alert.setContentText("Enter values!");
+                alert.showAndWait();
+                return null;
+            }
+            double alpha;
+            double beta;
+            try {
+                alpha = Double.parseDouble(textAlpha);
+                beta = Double.parseDouble(textBeta);
+            } catch (NumberFormatException ex) {
+                alert.setContentText("Wrong input type! You should enter Float numbers!");
+                alert.showAndWait();
+                return null;
+            }
+
+            if (alpha > beta) {
+                alert.setContentText("Wrong input type! Alpha should be less than beta!");
+                alert.showAndWait();
+                return null;
+            }
+
+            list.add(new Device(i, alpha, beta));
         }
         return list;
     }
@@ -309,6 +355,7 @@ public class MainScreenController implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
+
         //System.out.println("change started");
         if (property.equals("stepFlag")) {
             ArrayList<Source> sources = calc.getStartSources();
@@ -333,9 +380,12 @@ public class MainScreenController implements PropertyChangeListener {
             ObservableList<BufferElement> observableBuffer = FXCollections.observableArrayList();
             observableBuffer.addAll(buffer.getElements());
             TVBuffer.setItems(observableBuffer);
-        } else if (property.equals("resultFlag")) {
+        } else if (property.equals("requestAmount")) {
             ArrayList<Source> sources = calc.getSources();
             ArrayList<Device> devices = calc.getDevices();
+            Long amount = ((long) evt.getNewValue());
+            //LRequestAmount.setText(amount.toString());
+            Platform.runLater(() -> LRequestAmount.setText(amount.toString()));
 
             ObservableList<Source> observableSources = FXCollections.observableArrayList(sources);
             ObservableList<Device> observableDevices = FXCollections.observableArrayList(devices);
